@@ -1,5 +1,5 @@
 use crate::{
-    api::minesweeper::utils::{board_to_str_arr, cell_map_to_str},
+    api::minesweeper::utils::{board_to_str_arr, cell_map_to_str, get_records_response},
     AppState,
 };
 use actix_web::{get, post, web, Responder, Scope};
@@ -7,21 +7,23 @@ use serde::{Deserialize, Serialize};
 use sqlx::types::Uuid;
 use std::process;
 
-use super::types::{Board, Game, GameLevel};
+use super::types::{Board, Game, GameLevel, Record};
 
 pub fn minesweeper_routes(path: &str) -> Scope {
-    web::scope(path).service(hello).service(save_record)
+    web::scope(path).service(top_records).service(save_record)
+}
+
+#[derive(Serialize, Deserialize)]
+struct RecordsResponse {
+    easy: Vec<Record>,
+    medium: Vec<Record>,
+    expert: Vec<Record>,
 }
 
 #[get("/records")]
-async fn hello() -> impl Responder {
-    #[derive(Debug, Serialize, Deserialize)]
-    struct DummyBoard {
-        board: i32,
-    }
-    let board = DummyBoard { board: 3 };
-    // let serialized = serde_json::to_string(&point).unwrap();
-    web::Json(board)
+async fn top_records(app_data: web::Data<AppState>) -> impl Responder {
+    let response = get_records_response(&app_data.db).await;
+    web::Json(response)
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -45,7 +47,6 @@ async fn save_record(
     app_data: web::Data<AppState>,
 ) -> impl Responder {
     let record_id = Uuid::new_v4();
-    println!("{}", record_id);
     let query_result = sqlx::query(
         r#"
         INSERT INTO records
@@ -65,14 +66,14 @@ async fn save_record(
     .bind(board_to_str_arr(req_data.record.board.clone()))
     .execute(&app_data.db)
     .await;
-    let query_result = match query_result {
-        Ok(res) => res,
+    match query_result {
+        Ok(_) => {}
         Err(err) => {
             eprintln!("Error saving: {}", err);
             process::exit(1);
         }
     };
 
-    println!("{:?}, {}", req_data, query_result.rows_affected());
-    web::Json(req_data)
+    let results = get_records_response(&app_data.db).await;
+    web::Json(results)
 }

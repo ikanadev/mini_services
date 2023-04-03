@@ -5,13 +5,20 @@ use serde_json::Value;
 
 #[derive(Serialize, Deserialize)]
 pub struct Record {
-    id: String,
-    game: Game,
-    board: Board,
+    pub id: String,
+    pub game: Game,
+    pub board: Board,
     #[serde(rename = "startedAt")]
-    started_at: u64,
-    duration: u32,
-    name: String,
+    pub started_at: u64,
+    pub duration: u32,
+    pub name: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct RecordsResponse {
+    pub easy: Vec<Record>,
+    pub medium: Vec<Record>,
+    pub expert: Vec<Record>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
