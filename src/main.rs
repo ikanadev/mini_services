@@ -36,11 +36,6 @@ async fn main() -> std::io::Result<()> {
     };
 
     HttpServer::new(move || {
-        //let cors = Cors::default()
-        //    .send_wildcard()
-        //    .allowed_origin("*")
-        //    .allowed_methods(vec!["GET", "POST", "OPTIONS"])
-        //    .allow_any_header();
         let cors = Cors::permissive();
         App::new()
             .wrap(cors)
