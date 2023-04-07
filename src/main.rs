@@ -35,6 +35,15 @@ async fn main() -> std::io::Result<()> {
         }
     };
 
+    let migration_result = sqlx::migrate!("./migrations").run(&pool).await;
+    match migration_result {
+        Ok(_) => {}
+        Err(err) => {
+            eprintln!("DB connection error: {}", err);
+            process::exit(1);
+        }
+    }
+
     HttpServer::new(move || {
         let cors = Cors::permissive();
         App::new()
