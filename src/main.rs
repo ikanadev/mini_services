@@ -6,7 +6,7 @@ use dotenvy;
 use sqlx::postgres::{PgPool, PgPoolOptions};
 
 mod api;
-use api::minesweeper_routes;
+use api::{counters_routes, minesweeper_routes};
 
 pub struct AppState {
     db: PgPool,
@@ -40,10 +40,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(AppState { db: pool.clone() }))
-            .service(
-                // minesweeper_scope
-                minesweeper_routes("/minesweeper"),
-            )
+            .service(minesweeper_routes("/minesweeper"))
+            .service(counters_routes("/counters"))
     })
     .bind(("0.0.0.0", 4000))?
     .run()
