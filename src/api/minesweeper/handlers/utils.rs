@@ -1,10 +1,7 @@
+use sqlx::{types::Uuid, Pool, Postgres, Row};
 use std::collections::HashMap;
 
-use sqlx::{types::Uuid, Pool, Postgres, Row};
-
-use crate::api::minesweeper::types::{Board, CellMap, Game, Status};
-
-use super::types::{BoardCell, GameLevel, Record, RecordsResponse};
+use super::types::{Board, BoardCell, CellMap, Game, GameLevel, Record, RecordsResponse, Status};
 
 pub fn cell_map_to_str(cell_map: CellMap) -> String {
     let keys = cell_map.keys().map(|s| s.to_string()).collect::<Vec<_>>();
@@ -34,7 +31,8 @@ pub async fn get_records_response(pool: &Pool<Postgres>) -> RecordsResponse {
         expert: get_records(pool, GameLevel::Expert).await,
     }
 }
-pub async fn get_records(pool: &Pool<Postgres>, game_level: GameLevel) -> Vec<Record> {
+
+async fn get_records(pool: &Pool<Postgres>, game_level: GameLevel) -> Vec<Record> {
     let mut records: Vec<Record> = Vec::new();
 
     let sql = "select * from records where game_level=$1 order by duration limit 10;";

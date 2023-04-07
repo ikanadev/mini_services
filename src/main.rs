@@ -6,7 +6,7 @@ use dotenvy;
 use sqlx::postgres::{PgPool, PgPoolOptions};
 
 mod api;
-use api::minesweeper::scope::minesweeper_routes;
+use api::minesweeper_routes;
 
 pub struct AppState {
     db: PgPool,
