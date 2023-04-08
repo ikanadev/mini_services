@@ -35,7 +35,12 @@ pub async fn get_records_response(pool: &Pool<Postgres>) -> RecordsResponse {
 async fn get_records(pool: &Pool<Postgres>, game_level: GameLevel) -> Vec<Record> {
     let mut records: Vec<Record> = Vec::new();
 
-    let sql = "select * from records where game_level=$1 order by duration limit 10;";
+    let sql = r#"
+        select r.* from records r
+        join (
+            select name, min(duration) as duration from records where game_level=$1 group by name
+        ) mins on r.name = mins.name and r.duration = mins.duration and r.game_level=$1 order by r.duration limit 10;
+        "#;
     let rows = sqlx::query(sql)
         .bind(game_level.to_string())
         .fetch_all(pool)
